@@ -14,7 +14,7 @@ const app = express();
 // app.use(cors());
 
 app.use(cors({
-  origin: 'http://localhost:5173', // or your live frontend
+  origin: 'http://i8wo0cs00g4os84cwkc8sowo.31.97.61.92.sslip.io', // or your live frontend
   credentials: true
 }));
 app.use(express.json());

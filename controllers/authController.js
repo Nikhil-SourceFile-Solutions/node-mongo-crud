@@ -1,7 +1,8 @@
 const { body, validationResult } = require('express-validator');
 const User = require('../models/User');
-
-
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+require('dotenv').config();
 // ✅ Step 1: Validation Middleware (defined separately)
 exports.validateRegister = [
     body('name').notEmpty().withMessage('Name is required'),
@@ -10,6 +11,7 @@ exports.validateRegister = [
     body('password').isLength({ min: 6 }).withMessage('Password too short'),
 ];
 
+console.log("JWT_SECRET:", process.env.JWT_SECRET);
 // ✅ Step 2: Register Controller
 exports.register = async (req, res) => {
     // Check validation results
@@ -20,7 +22,10 @@ exports.register = async (req, res) => {
 
     try {
         const user = await User.create(req.body);
-        res.status(201).json(user);
+       res.status(201).json({
+  status: 'success',
+  message: 'User registered successfully',
+});
     } catch (err) {
         if (err.code === 11000) {
             // Duplicate key error
@@ -40,10 +45,11 @@ exports.register = async (req, res) => {
 
 
 exports.login = async (req, res) => {
-    try {
-        const user = await User.create(req.body);
-        res.status(201).json(user);
-    } catch (err) {
-        res.status(400).json({ error: err.message });
-    }
+  const { email, password } = req.body;
+   const user = await User.findOne({ email });
+   if (!user) return res.status(422).json({ message: 'User not found' });
+   const match = await bcrypt.compare(password, user.password);
+   if (!match) return res.status(422).json({ message: 'Wrong password' });
+   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+   res.json({status:"success", token:token,user:JSON.stringify(user) });
 };

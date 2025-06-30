@@ -25,8 +25,8 @@ const server = http.createServer(app);
 // ✅ Attach socket.io to the same server
 const io = socketIo(server, {
     cors: {
-        // origin: 'http://localhost:5173', // your frontend port
-         origin: 'http://i8wo0cs00g4os84cwkc8sowo.31.97.61.92.sslip.io',
+        origin: 'http://localhost:5173', // your frontend port
+        //  origin: 'http://i8wo0cs00g4os84cwkc8sowo.31.97.61.92.sslip.io',
         methods: ['GET', 'POST'],
         credentials: true,
     }
@@ -98,19 +98,14 @@ io.on('connection', (socket) => {
 });
 
 // ✅ Connect MongoDB
-// mongoose.connect(process.env.MONGO_URI, {
-//   useNewUrlParser: true,
-//   useUnifiedTopology: true
-// }).then(() => {
-//   console.log('MongoDB connected');
-// }).catch(err => {
-//   console.error('MongoDB connection error:', err.message);
-// });
-
-
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.log("DB connection error:", err));
+mongoose.connect(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+}).then(() => {
+  console.log('MongoDB connected');
+}).catch(err => {
+  console.error('MongoDB connection error:', err.message);
+});
 
 // ✅ API routes
 app.get('/', (req, res) => {

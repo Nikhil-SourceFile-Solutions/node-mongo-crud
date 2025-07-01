@@ -5,18 +5,78 @@ const relativeTime = require('dayjs/plugin/relativeTime');
 dayjs.extend(relativeTime);
 
 
+
 exports.homeData = async (req, res) => {
-  const users = await User.find();
+  const authUserId = req.user.id || req.query.authUserId;
 
-  const formattedUsers = users.map(user => {
-    return {
-      ...user._doc,
-      lastActiveReadable: user.lastActive ? dayjs(user.lastActive).fromNow() : 'Never',
-    };
+  // 🟢 Step 1: Get all user IDs who have chatted with the auth user
+  const chatPartners = await Chat.find({
+    $or: [
+      { sender_id: authUserId },
+      { receiver_id: authUserId }
+    ]
+  }).distinct("sender_id"); // get unique sender IDs
+
+  const chatReceivers = await Chat.find({
+    $or: [
+      { sender_id: authUserId },
+      { receiver_id: authUserId }
+    ]
+  }).distinct("receiver_id");
+
+  const allPartnerIds = [...new Set([...chatPartners, ...chatReceivers])]
+    .filter(id => id.toString() !== authUserId.toString());
+
+  // 🟢 Step 2: Now get only those users
+  const users = await User.find({ _id: { $in: allPartnerIds } });
+
+  // 🟢 Step 3: Format user data
+  const formattedUsers = await Promise.all(
+    users.map(async (user) => {
+      const lastChat = await Chat.findOne({
+        $or: [
+          { sender_id: authUserId, receiver_id: user._id },
+          { sender_id: user._id, receiver_id: authUserId },
+        ],
+      })
+        .sort({ createdAt: -1 })
+        .lean();
+
+      const unreadCount = await Chat.countDocuments({
+        sender_id: user._id,
+        receiver_id: authUserId,
+        isViewed: false,
+      });
+
+      return {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        lastMessage: lastChat
+          ? {
+              text: lastChat.message?.slice(0, 40),
+              type: lastChat.type,
+              createdAt: lastChat.createdAt,
+              from: lastChat.sender_id,
+            }
+          : null,
+        unreadCount,
+        lastActiveReadable: user.lastActive
+          ? dayjs(user.lastActive).fromNow()
+          : 'Never',
+      };
+    })
+  );
+
+  res.status(200).json({
+    users: formattedUsers,
+    status: 'success',
+    authUserId: authUserId,
+    apple: 150
   });
-
-  res.status(200).json({ users: formattedUsers, status: 'success' });
 };
+
+
 
 
 

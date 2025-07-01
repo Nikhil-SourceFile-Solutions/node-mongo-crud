@@ -37,7 +37,7 @@ exports.chatData = async (req, res) => {
 
     const readableLastActive = user.lastActive
       ? dayjs(user.lastActive).fromNow()
-      : 'Never';
+      : '';
 
       const authUserId = req.user.id;
    

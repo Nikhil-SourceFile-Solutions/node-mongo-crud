@@ -5,5 +5,7 @@ const { protect } = require('../middleware/authMiddleware');
 
 router.get('/home-data',protect, homeController.homeData);
 router.get('/chat-data',protect, homeController.chatData);
+router.get('/all-users',protect, homeController.allUsers);
+
 router.post('/messages', protect, homeController.sendMessage);
 module.exports = router;

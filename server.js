@@ -75,12 +75,12 @@ io.on('connection', (socket) => {
   });
 
 
-    socket.on('typing', ({ toUserId }) => {
-    socket.to(toUserId).emit('typing', { fromUserId: socket.id });
+    socket.on('typing', ({ toUserId,fromUserId }) => {
+    socket.to(toUserId).emit('typing', { fromUserId: socket.id,toUserId:toUserId,fromUserId:fromUserId });
   });
 
-  socket.on('stop_typing', ({ toUserId }) => {
-    socket.to(toUserId).emit('stop_typing', { fromUserId: socket.id });
+  socket.on('stop_typing', ({ toUserId,fromUserId }) => {
+    socket.to(toUserId).emit('stop_typing', { fromUserId: socket.id,toUserId:toUserId ,fromUserId:fromUserId});
   });
 
   // ✅ On disconnect

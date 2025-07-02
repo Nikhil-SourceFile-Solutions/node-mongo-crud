@@ -54,7 +54,7 @@ exports.homeData = async (req, res) => {
         email: user.email,
         lastMessage: lastChat
           ? {
-              text: lastChat.message?.slice(0, 40),
+              message: lastChat.message?.slice(0, 40),
               type: lastChat.type,
               createdAt: lastChat.createdAt,
               from: lastChat.sender_id,
@@ -147,3 +147,19 @@ exports.sendMessage = async (req, res) => {
     res.status(500).json({ status: 'error', message: err.message });
   }
 };
+
+
+exports.allUsers = async (req, res) => {
+  try {
+    //  await User.deleteMany();
+    
+     const authUserId = req.user?.id || req.query.authUserId;
+
+    const users = await User.find({ _id: { $ne: authUserId } }).select('-password');
+    res.status(200).json({ status: 'success', users: users });
+  } catch (err) {
+    res.status(500).json({ status: 'error', message: err.message });
+  }
+};
+
+

@@ -19,12 +19,12 @@ const chatSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['text', 'image', 'video', 'file'], 
+    enum: ['text', 'image', 'video', 'document'], 
     required: true,
   },
-  data: {
-    type: String, 
-    default: '',
+ data: {
+    type: Object,    
+    default: {},    
   },
   isReceived: {
     type: Boolean,

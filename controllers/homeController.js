@@ -132,15 +132,28 @@ exports.chatData = async (req, res) => {
 
 exports.sendMessage = async (req, res) => {
   try {
-    const { receiver_id, message, type, data } = req.body;
+    const { receiver_id, message, type } = req.body;
 
-    const newChat = await Chat.create({
+     // Multer adds the file info to req.file
+    const file = req.file;
+    const filePath = file ? file.filename : null;  // Save only filename or relative path
+ const originalName = req.file ? req.file.originalname : '';
+ const fileSize = req.file ? req.file.size : 0;
+     const newChat = await Chat.create({
       sender_id: req.user.id,
       receiver_id,
       message,
       type,
-      data,
+      data: {
+        filePath:'uploads/'+filePath,
+        originalName:originalName,
+        fileSize:fileSize
+      },   // Save filename, NOT binary data
     });
+
+    
+
+
     res.status(201).json({ status: 'success', chat: newChat });
     const io = req.app.get('io');
 

@@ -8,24 +8,38 @@ const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
 const homeRoutes = require('./routes/homeRoutes');
 const User = require('./models/User');
-
+const multer = require('multer');
+const path = require('path');
 dotenv.config();
 
 const app = express();
 
 // ✅ Enable CORS (adjust origin for production)
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'http://i8wo0cs00g4os84cwkc8sowo.31.97.61.92.sslip.io',
   credentials: true,
 }));
 
 app.use(express.json());
 
+// Serve static files from uploads folder
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/'); // upload to 'uploads' folder
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname); // unique filename
+  }
+});
+const upload = multer({ storage });
+
 // ✅ Create HTTP server and attach Socket.IO
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: 'http://i8wo0cs00g4os84cwkc8sowo.31.97.61.92.sslip.io',
     methods: ['GET', 'POST'],
     credentials: true,
   },

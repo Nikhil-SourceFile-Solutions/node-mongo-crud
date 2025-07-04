@@ -15,7 +15,7 @@ const app = express();
 
 // ✅ Enable CORS (adjust origin for production)
 app.use(cors({
-  origin: 'http://i8wo0cs00g4os84cwkc8sowo.31.97.61.92.sslip.io',
+  origin: 'http://localhost:5173',
   credentials: true,
 }));
 
@@ -25,7 +25,7 @@ app.use(express.json());
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: 'http://i8wo0cs00g4os84cwkc8sowo.31.97.61.92.sslip.io',
+    origin: 'http://localhost:5173',
     methods: ['GET', 'POST'],
     credentials: true,
   },

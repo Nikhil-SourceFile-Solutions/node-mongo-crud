@@ -54,11 +54,11 @@ exports.homeData = async (req, res) => {
         email: user.email,
         lastMessage: lastChat
           ? {
-              message: lastChat.message?.slice(0, 40),
-              type: lastChat.type,
-              createdAt: lastChat.createdAt,
-              from: lastChat.sender_id,
-            }
+            message: lastChat.message?.slice(0, 40),
+            type: lastChat.type,
+            createdAt: lastChat.createdAt,
+            from: lastChat.sender_id,
+          }
           : null,
         unreadCount,
         lastActiveReadable: user.lastActive
@@ -82,6 +82,8 @@ exports.homeData = async (req, res) => {
 
 
 exports.chatData = async (req, res) => {
+
+  //  await Chat.deleteMany();
   try {
     const userId = req.query._id;
 
@@ -99,8 +101,8 @@ exports.chatData = async (req, res) => {
       ? dayjs(user.lastActive).fromNow()
       : '';
 
-      const authUserId = req.user.id;
-   
+    const authUserId = req.user.id;
+
 
     if (!userId) {
       return res.status(400).json({ status: 'error', message: 'Other user ID is required' });
@@ -119,7 +121,7 @@ exports.chatData = async (req, res) => {
         lastActiveReadable: readableLastActive,
       },
       status: 'success',
-      chats:chats
+      chats: chats
     });
   } catch (error) {
     console.error('Error fetching user:', error);
@@ -133,7 +135,7 @@ exports.sendMessage = async (req, res) => {
     const { receiver_id, message, type, data } = req.body;
 
     const newChat = await Chat.create({
-      sender_id: req.user.id, 
+      sender_id: req.user.id,
       receiver_id,
       message,
       type,
@@ -141,7 +143,11 @@ exports.sendMessage = async (req, res) => {
     });
     res.status(201).json({ status: 'success', chat: newChat });
     const io = req.app.get('io');
+
     io.to(receiver_id).emit('receive_message', newChat);
+
+
+    io.to(receiver_id).emit('apple', 1155);
 
   } catch (err) {
     res.status(500).json({ status: 'error', message: err.message });
@@ -152,8 +158,8 @@ exports.sendMessage = async (req, res) => {
 exports.allUsers = async (req, res) => {
   try {
     //  await User.deleteMany();
-    
-     const authUserId = req.user?.id || req.query.authUserId;
+
+    const authUserId = req.user?.id || req.query.authUserId;
 
     const users = await User.find({ _id: { $ne: authUserId } }).select('-password');
     res.status(200).json({ status: 'success', users: users });

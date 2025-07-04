@@ -19,6 +19,10 @@ const userSchema = new mongoose.Schema({
     unique: true,
     minlength: [10, 'Phone must be at least 10 digits']
   },
+   avatar: {
+    type: String,
+    required: null
+  },
   password: {
     type: String,
     required: true,

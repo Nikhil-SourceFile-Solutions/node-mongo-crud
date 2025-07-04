@@ -52,6 +52,7 @@ exports.homeData = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        avatar:user?.avatar||'',
         lastMessage: lastChat
           ? {
             message: lastChat.message?.slice(0, 40),
@@ -182,3 +183,42 @@ exports.allUsers = async (req, res) => {
 };
 
 
+exports.updateProfile = async (req, res) => {
+  try {
+    const { name, email, phone } = req.body;
+    const authUserId = req.user.id || req.query.authUserId;
+
+    if (!authUserId) {
+      return res.status(400).json({ status: 'error', message: 'User ID missing' });
+    }
+
+    const user = await User.findById(authUserId);
+
+    if (!user) {
+      return res.status(404).json({ status: 'error', message: 'User not found' });
+    }
+
+    // ✅ Update text fields
+    if (name) user.name = name;
+    if (email) user.email = email;
+    if (phone) user.phone = phone;
+
+    // ✅ Update avatar if file uploaded
+    if (req.file) {
+      const filePath = 'uploads/' + req.file.filename;  // Save relative path
+      user.avatar = filePath;
+    }
+
+    await user.save();
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Profile updated successfully',
+      user:JSON.stringify(user),
+    });
+
+  } catch (error) {
+    console.error('Profile update error:', error);
+    return res.status(500).json({ status: 'error', message: 'Something went wrong' });
+  }
+};

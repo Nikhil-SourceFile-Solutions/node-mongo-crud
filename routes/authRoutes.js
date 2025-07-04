@@ -10,4 +10,8 @@ router.post('/login', authController.login);
 router.post('/register', upload.none(), authController.register);
 
 
+
+
+
+
 module.exports = router;

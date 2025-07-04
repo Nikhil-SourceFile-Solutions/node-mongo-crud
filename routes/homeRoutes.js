@@ -21,4 +21,6 @@ router.get('/all-users', protect, homeController.allUsers);
 
 router.post('/messages', protect, upload.single('file'), sendMessage);
 
+router.post('/update-profile', protect, upload.single('file'), homeController.updateProfile);
+
 module.exports = router;

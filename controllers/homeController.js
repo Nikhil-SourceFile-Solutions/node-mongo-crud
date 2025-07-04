@@ -171,8 +171,8 @@ exports.sendMessage = async (req, res) => {
 
 exports.allUsers = async (req, res) => {
   try {
-    //  await User.deleteMany();
-
+//   await User.deleteMany();
+//  await Chat.deleteMany({});
     const authUserId = req.user?.id || req.query.authUserId;
 
     const users = await User.find({ _id: { $ne: authUserId } }).select('-password');

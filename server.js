@@ -8,6 +8,7 @@ const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
 const homeRoutes = require('./routes/homeRoutes');
 const User = require('./models/User');
+const Chat = require('./models/Chat');
 const multer = require('multer');
 const path = require('path');
 dotenv.config();
@@ -16,7 +17,7 @@ const app = express();
 
 // ✅ Enable CORS (adjust origin for production)
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: 'http://i8wo0cs00g4os84cwkc8sowo.31.97.61.92.sslip.io',
   credentials: true,
 }));
 
@@ -39,7 +40,7 @@ const upload = multer({ storage });
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: 'http://localhost:5173',
+    origin: 'http://i8wo0cs00g4os84cwkc8sowo.31.97.61.92.sslip.io',
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -54,19 +55,49 @@ io.on('connection', (socket) => {
 
   console.log('User connected with ID:', userId, 'Socket ID:', socket.id);
 
-  (async () => {
-    try {
-      if (userId) {
-        socket.join(userId); // join room
-        await User.findByIdAndUpdate(userId, {
-          isActive: true,
-          lastActive: new Date(),
-        });
-      }
-    } catch (err) {
-      console.error('Error setting user active:', err.message);
-    }
-  })();
+  
+
+   if (userId) {
+    (async () => {
+  try {
+    if (!userId) return;
+
+    socket.join(userId);  // Join the user's private room
+
+    await User.findByIdAndUpdate(userId, {
+      isActive: true,
+      lastActive: new Date(),
+    });
+
+    const messages = await Chat.find({
+  $or: [
+    { sender_id: userId },
+    { receiver_id: userId },
+  ]
+}).select('sender_id receiver_id');
+
+    const interactedUserIds = new Set();
+
+    messages.forEach(msg => {
+      if (msg.sender_id?.toString() !== userId) interactedUserIds.add(msg.sender_id.toString());
+      if (msg.receiver_id?.toString() !== userId) interactedUserIds.add(msg.receiver_id.toString());
+    });
+
+    const uniqueIdsArray = Array.from(interactedUserIds);
+
+   uniqueIdsArray.forEach((targetUserId) => {
+  if (targetUserId) io.to(targetUserId).emit('online', userId);
+});
+
+  } catch (err) {
+    console.error('Error setting user active or fetching chats:', err.message);
+  }
+})();
+  } else {
+    console.log('No userId provided → disconnecting socket');
+    socket.disconnect();
+  }
+
 
   // ✅ Message sending
   socket.on('send_message', async (data) => {
@@ -107,6 +138,29 @@ io.on('connection', (socket) => {
           isActive: false,
           lastActive: new Date(),
         });
+
+
+
+
+         const messages = await Chat.find({
+  $or: [
+    { sender_id: userId },
+    { receiver_id: userId },
+  ]
+}).select('sender_id receiver_id');
+
+    const interactedUserIds = new Set();
+
+    messages.forEach(msg => {
+      if (msg.sender_id?.toString() !== userId) interactedUserIds.add(msg.sender_id.toString());
+      if (msg.receiver_id?.toString() !== userId) interactedUserIds.add(msg.receiver_id.toString());
+    });
+
+    const uniqueIdsArray = Array.from(interactedUserIds);
+
+   uniqueIdsArray.forEach((targetUserId) => {
+  if (targetUserId) io.to(targetUserId).emit('offline', {userId,lastActive:new Date()});
+});
       }
     } catch (err) {
       console.error('Error marking user inactive:', err.message);

@@ -61,7 +61,7 @@ exports.homeData = async (req, res) => {
             from: lastChat.sender_id,
           }
           : null,
-        unreadCount,
+        unreadCount:unreadCount,
         lastActiveReadable: user.lastActive
           ? dayjs(user.lastActive).fromNow()
           : 'Never',

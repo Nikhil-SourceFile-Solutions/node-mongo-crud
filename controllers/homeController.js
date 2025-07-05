@@ -129,6 +129,16 @@ await Chat.updateMany(
 
 // also info to all user that message recived
 
+const io = req.app.get('io');
+const c = await Chat.find({ receiver_id: authUserId }).select('sender_id');
+const senderIds = [...new Set(c.map(chat => chat.sender_id.toString()))];
+
+senderIds.forEach((ee)=>{
+ io.to(ee).emit('viewed', authUserId);
+})
+ 
+
+
     return res.status(200).json({
       user: {
         ...user._doc,

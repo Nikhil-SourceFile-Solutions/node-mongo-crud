@@ -55,54 +55,76 @@ io.on('connection', (socket) => {
 
   console.log('User connected with ID:', userId, 'Socket ID:', socket.id);
 
-  
 
-   if (userId) {
+
+  if (userId) {
     (async () => {
-  try {
-    if (!userId) return;
+      try {
+        if (!userId) return;
 
-    socket.join(userId);  // Join the user's private room
+        socket.join(userId);  // Join the user's private room
 
-    await User.findByIdAndUpdate(userId, {
-      isActive: true,
-      lastActive: new Date(),
-    });
+        await User.findByIdAndUpdate(userId, {
+          isActive: true,
+          lastActive: new Date(),
+        });
 
-    const messages = await Chat.find({
-  $or: [
-    { sender_id: userId },
-    { receiver_id: userId },
-  ]
-}).select('sender_id receiver_id');
+        const messages = await Chat.find({
+          $or: [
+            { sender_id: userId },
+            { receiver_id: userId },
+          ]
+        }).select('sender_id receiver_id');
 
-    const interactedUserIds = new Set();
+        const interactedUserIds = new Set();
 
-    messages.forEach(msg => {
-      if (msg.sender_id?.toString() !== userId) interactedUserIds.add(msg.sender_id.toString());
-      if (msg.receiver_id?.toString() !== userId) interactedUserIds.add(msg.receiver_id.toString());
-    });
+        messages.forEach(msg => {
+          if (msg.sender_id?.toString() !== userId) interactedUserIds.add(msg.sender_id.toString());
+          if (msg.receiver_id?.toString() !== userId) interactedUserIds.add(msg.receiver_id.toString());
+        });
 
-    const uniqueIdsArray = Array.from(interactedUserIds);
+        const uniqueIdsArray = Array.from(interactedUserIds);
 
-    await Chat.updateMany(
-  { receiver_id: userId },
-  { $set: { isReceived: true } }
-);
+        await Chat.updateMany(
+          { receiver_id: userId },
+          { $set: { isReceived: true } }
+        );
 
-   uniqueIdsArray.forEach((targetUserId) => {
-  if (targetUserId) io.to(targetUserId).emit('online', userId);
-});
+        uniqueIdsArray.forEach((targetUserId) => {
+          if (targetUserId) io.to(targetUserId).emit('online', userId);
+        });
 
-  } catch (err) {
-    console.error('Error setting user active or fetching chats:', err.message);
-  }
-})();
+      } catch (err) {
+        console.error('Error setting user active or fetching chats:', err.message);
+      }
+    })();
   } else {
     console.log('No userId provided → disconnecting socket');
     socket.disconnect();
   }
 
+const updateChatViewed = async (chatId) => {
+  try {
+    const updatedChat = await Chat.findByIdAndUpdate(
+      chatId,
+      { isViewed: true ,isReceived:true},   // or { is_viewed: true } depending on your schema
+      { new: true }         // To return the updated document
+    );
+
+    if (updatedChat) {
+      io.to(updatedChat.sender_id).emit('message_viewed', updatedChat.receiver_id);
+    } else {
+      console.log('Chat not found');
+    }
+  } catch (error) {
+    console.error('Error updating chat:', error);
+  }
+};
+
+socket.on('recived_live', async (data) => {
+  console.log("recived_live",data)
+updateChatViewed(data);
+});
 
   // ✅ Message sending
   socket.on('send_message', async (data) => {
@@ -125,12 +147,12 @@ io.on('connection', (socket) => {
   });
 
 
-    socket.on('typing', ({ toUserId,fromUserId }) => {
-    socket.to(toUserId).emit('typing', { fromUserId: socket.id,toUserId:toUserId,fromUserId:fromUserId });
+  socket.on('typing', ({ toUserId, fromUserId }) => {
+    socket.to(toUserId).emit('typing', { fromUserId: socket.id, toUserId: toUserId, fromUserId: fromUserId });
   });
 
-  socket.on('stop_typing', ({ toUserId,fromUserId }) => {
-    socket.to(toUserId).emit('stop_typing', { fromUserId: socket.id,toUserId:toUserId ,fromUserId:fromUserId});
+  socket.on('stop_typing', ({ toUserId, fromUserId }) => {
+    socket.to(toUserId).emit('stop_typing', { fromUserId: socket.id, toUserId: toUserId, fromUserId: fromUserId });
   });
 
   // ✅ On disconnect
@@ -147,25 +169,25 @@ io.on('connection', (socket) => {
 
 
 
-         const messages = await Chat.find({
-  $or: [
-    { sender_id: userId },
-    { receiver_id: userId },
-  ]
-}).select('sender_id receiver_id');
+        const messages = await Chat.find({
+          $or: [
+            { sender_id: userId },
+            { receiver_id: userId },
+          ]
+        }).select('sender_id receiver_id');
 
-    const interactedUserIds = new Set();
+        const interactedUserIds = new Set();
 
-    messages.forEach(msg => {
-      if (msg.sender_id?.toString() !== userId) interactedUserIds.add(msg.sender_id.toString());
-      if (msg.receiver_id?.toString() !== userId) interactedUserIds.add(msg.receiver_id.toString());
-    });
+        messages.forEach(msg => {
+          if (msg.sender_id?.toString() !== userId) interactedUserIds.add(msg.sender_id.toString());
+          if (msg.receiver_id?.toString() !== userId) interactedUserIds.add(msg.receiver_id.toString());
+        });
 
-    const uniqueIdsArray = Array.from(interactedUserIds);
+        const uniqueIdsArray = Array.from(interactedUserIds);
 
-   uniqueIdsArray.forEach((targetUserId) => {
-  if (targetUserId) io.to(targetUserId).emit('offline', {userId,lastActive:new Date()});
-});
+        uniqueIdsArray.forEach((targetUserId) => {
+          if (targetUserId) io.to(targetUserId).emit('offline', { userId, lastActive: new Date() });
+        });
       }
     } catch (err) {
       console.error('Error marking user inactive:', err.message);

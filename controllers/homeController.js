@@ -122,6 +122,13 @@ exports.chatData = async (req, res) => {
   { $set: { isViewed: true } }
 );
 
+await Chat.updateMany(
+  { receiver_id: authUserId },
+  { $set: { isReceived: true } }
+);
+
+// also info to all user that message recived
+
     return res.status(200).json({
       user: {
         ...user._doc,

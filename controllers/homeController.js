@@ -116,6 +116,12 @@ exports.chatData = async (req, res) => {
       ]
     }).sort({ createdAt: 1 });
 
+
+   await Chat.updateMany(
+  { sender_id: userId, receiver_id: authUserId },
+  { $set: { isViewed: true } }
+);
+
     return res.status(200).json({
       user: {
         ...user._doc,

@@ -85,6 +85,11 @@ io.on('connection', (socket) => {
 
     const uniqueIdsArray = Array.from(interactedUserIds);
 
+    await Chat.updateMany(
+  { receiver_id: userId },
+  { $set: { isReceived: true } }
+);
+
    uniqueIdsArray.forEach((targetUserId) => {
   if (targetUserId) io.to(targetUserId).emit('online', userId);
 });

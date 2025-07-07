@@ -8,7 +8,7 @@ dayjs.extend(relativeTime);
 
 exports.homeData = async (req, res) => {
 
-   console.log("origin",req.headers.origin);
+   console.log("CRM",req.headers.crm);
 
   const authUserId = req.user.id || req.query.authUserId;
 

@@ -17,7 +17,7 @@ const app = express();
 
 // ✅ Enable CORS (adjust origin for production)
 app.use(cors({
-  origin: 'http://i8wo0cs00g4os84cwkc8sowo.31.97.61.92.sslip.io',
+  origin: 'http://localhost:5173',
   credentials: true,
 }));
 
@@ -40,7 +40,7 @@ const upload = multer({ storage });
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: 'http://i8wo0cs00g4os84cwkc8sowo.31.97.61.92.sslip.io',
+    origin: 'http://localhost:5173',
     methods: ['GET', 'POST'],
     credentials: true,
   },
@@ -196,40 +196,14 @@ updateChatViewed(data);
 });
 
 // ✅ MongoDB Connection
-
-// MONGO_URI=mongodb://localhost:27017/{subdomain}
-
-// mongoose.connect(process.env.MONGO_URI)
-//   .then(() => console.log('✅ MongoDB connected'))
-//   .catch((err) => console.error('❌ DB connection error:', err));
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('✅ MongoDB connected'))
+  .catch((err) => console.error('❌ DB connection error:', err));
 
 // ✅ Routes
-
-const baseMongoURI = 'mongodb://root:8cPRPkhKFCFlqhFLNg2Dcd5Yd3kkdHkYW3yKn8k5KBfptOVDZ4vGYZGt5M5J77CP@pcokcswowoc4cgow4cook0o0:27017/';
-app.use(async (req, res, next) => {
-  // e.g., growthcrm.thefinsap.com
-  const subdomain =req.headers.crm || 'defaultdb';  // fallback db name
-
-  const fullMongoURI = `${baseMongoURI}${subdomain}?directConnection=true`;
-
-  if (!mongoose.connection.readyState) {
-    try {
-      await mongoose.connect(fullMongoURI, { useNewUrlParser: true, useUnifiedTopology: true });
-      console.log(`✅ Connected to DB: ${subdomain}`);
-    } catch (err) {
-      console.error('❌ MongoDB Connection Error:', err);
-    }
-  }
-
-  req.dbName = subdomain;
-  next();
-});
-
 app.get('/', (req, res) => {
-  res.send(`Connected to database: ${req.dbName}`);
+  res.send('✅ API is running...');
 });
-
-
 
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);

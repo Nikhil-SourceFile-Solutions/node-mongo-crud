@@ -3,6 +3,10 @@ const bcrypt = require('bcrypt');
 
 // ✅ 1. Define schema first
 const userSchema = new mongoose.Schema({
+   crm: {
+    type: String,
+    required: false
+  },
   name: {
     type: String,
     required: true
@@ -30,7 +34,7 @@ const userSchema = new mongoose.Schema({
   },
 
   // ✅ Add this field
-   isActive: { type: Boolean, default: false },
+  isActive: { type: Boolean, default: false },
   lastActive: { type: Date, default: null }
 
 }, {

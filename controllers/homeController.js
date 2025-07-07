@@ -7,6 +7,9 @@ dayjs.extend(relativeTime);
 
 
 exports.homeData = async (req, res) => {
+
+   console.log("origin",req.headers.origin);
+
   const authUserId = req.user.id || req.query.authUserId;
 
   // 🟢 Step 1: Get all user IDs who have chatted with the auth user

@@ -207,8 +207,8 @@ updateChatViewed(data);
 
 const baseMongoURI = 'mongodb://root:8cPRPkhKFCFlqhFLNg2Dcd5Yd3kkdHkYW3yKn8k5KBfptOVDZ4vGYZGt5M5J77CP@pcokcswowoc4cgow4cook0o0:27017/';
 app.use(async (req, res, next) => {
-  const host = req.headers.host;  // e.g., growthcrm.thefinsap.com
-  const subdomain = host.split('.')[0] || 'defaultdb';  // fallback db name
+  // e.g., growthcrm.thefinsap.com
+  const subdomain =req.headers.crm || 'defaultdb';  // fallback db name
 
   const fullMongoURI = `${baseMongoURI}${subdomain}?directConnection=true`;
 

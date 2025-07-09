@@ -9,7 +9,9 @@ router.post('/login', authController.login);
 
 router.post('/register', upload.none(), authController.register);
 
+router.post('/crm-register', authController.crmRegister);
 
+router.post('/direct-login', authController.directLogin);
 
 
 

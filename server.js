@@ -17,7 +17,7 @@ const app = express();
 
 // ✅ Enable CORS (adjust origin for production)
 app.use(cors({
-  origin:[ 'http://localhost:5174'],
+  origin:[ 'http://chat.sourcefile.online'],
   credentials: true,
 }));
 

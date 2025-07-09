@@ -16,8 +16,25 @@ dotenv.config();
 const app = express();
 
 // ✅ Enable CORS (adjust origin for production)
+const allowedOrigins = [
+  'http://chat.sourcefile.online',
+];
+
 app.use(cors({
-  origin:[ 'http://chat.sourcefile.online'],
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);  // Allow non-browser tools like Postman
+
+    if (
+      allowedOrigins.includes(origin) ||
+      /^http:\/\/.*\.localhost(:\d+)?$/.test(origin) ||         // any subdomain of localhost + optional port
+      /^http:\/\/localhost(:\d+)?$/.test(origin) ||             // plain localhost + optional port
+      /^https?:\/\/([a-zA-Z0-9-]+\.)*thefinsap\.com$/.test(origin)  // any subdomain of thefinsap.com
+    ) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 
